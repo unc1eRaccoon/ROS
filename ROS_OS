@@ -9,7 +9,6 @@ local CURRENT_VERSION = "1.0.0"
 
 -- Directories and Files
 local APPS_DIR = "ros/apps"
-local SYSTEM_FILE = "ROS.lua"
 if not fs.exists(APPS_DIR) then fs.makeDir(APPS_DIR) end
 
 -- Global OS State
@@ -132,6 +131,7 @@ end
 local function openAppStore()
     currentActiveWindow = "store"
     local storeWin = window.create(term.current(), 3, 2, w - 4, h - 3, true)
+    
     storeWin.setBackgroundColor(colors.white)
     storeWin.clear()
     
@@ -206,7 +206,7 @@ local function openAppStore()
     drawDesktop()
 end
 
--- Settings Panel and OS Update Logic
+-- Settings Panel and Safe OS Update Logic
 local function openSettings()
     currentActiveWindow = "settings"
     local setWin = window.create(term.current(), 4, 3, w - 6, h - 5, true)
@@ -236,24 +236,35 @@ local function openSettings()
             
             if remoteVersion ~= CURRENT_VERSION then
                 print(" New Version Available: " .. remoteVersion)
-                print(" Update OS? (y/n)")
+                print(" Download update? (y/n)")
                 setWin.setCursorPos(2, h - 7)
                 local confirm = read():lower()
                 
                 if confirm == "y" or confirm == "yes" then
                     print(" Fetching system update...")
-                    local updateRes = http.get(RAW_URL .. "ROS.lua")
+                    -- Downloads from ROS_OS.lua on GitHub
+                    local updateRes = http.get(RAW_URL .. "ROS_OS.lua")
                     if updateRes then
                         local code = updateRes.readAll()
                         updateRes.close()
                         
-                        -- Overwrites ROS.lua safely
-                        local sysFile = fs.open(SYSTEM_FILE, "w")
+                        -- Generates name: ROS_[version].lua
+                        local newFileName = "ROS_" .. remoteVersion .. ".lua"
+                        local sysFile = fs.open(newFileName, "w")
                         sysFile.write(code)
                         sysFile.close()
                         
-                        print(" Update Completed! Rebooting...")
-                        os.sleep(2)
+                        print("\n Download Complete!")
+                        print(" Saved as: " .. newFileName)
+                        
+                        -- АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ STARTUP.LUA И ПЕРЕЗАГРУЗКА
+                        print(" Updating startup.lua...")
+                        local startupFile = fs.open("startup.lua", "w")
+                        startupFile.write('shell.run("' .. newFileName .. '")\n')
+                        startupFile.close()
+                        
+                        print(" Rebooting system in 3 seconds...")
+                        os.sleep(3)
                         os.reboot()
                     else
                         print(" Download error during update!")
