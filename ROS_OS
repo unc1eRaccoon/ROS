@@ -5,7 +5,7 @@
 -- REPOSITORY CONFIGURATION (Change to your own GitHub details)
 local GITHUB_USER = "unc1eRaccoon"
 local GITHUB_REPO = "ROS/refs/heads"
-local CURRENT_VERSION = "1.0.0"
+local CURRENT_VERSION = "1.0.1"
 
 -- Directories and Files
 local APPS_DIR = "ros/apps"
@@ -260,7 +260,7 @@ local function openSettings()
                         -- АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ STARTUP.LUA И ПЕРЕЗАГРУЗКА
                         print(" Updating startup.lua...")
                         local startupFile = fs.open("startup.lua", "w")
-                        startupFile.write('shell.run("' .. newFileName .. '")\n')
+                        startupFile.write('shell.run("' .. newFileName .. '")\nmonitor top newFileName\n')
                         startupFile.close()
                         
                         print(" Rebooting system in 3 seconds...")
