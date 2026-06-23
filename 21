@@ -1,0 +1,173 @@
+local monitor = peripheral.find("monitor")
+if not monitor then
+    print("Ошибка: Подключите золотой (Advanced) монитор!")
+    return
+end
+
+monitor.setTextScale(1)
+local oldTerm = term.redirect(monitor)
+local w, h = term.getSize()
+
+-- Названия карт для красоты
+local cardNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Валет", "Дама", "Король", "Туз"}
+local cardValues = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11}
+
+-- Функция генерации случайной карты
+local function getRandomCard()
+    local index = math.random(#cardNames)
+    return { name = cardNames[index], value = cardValues[index] }
+end
+
+-- Подсчет очков с учетом Тузов (если перебор, Туз превращается из 11 в 1)
+local function calculateScore(hand)
+    local score = 0
+    local aces = 0
+    for _, card in ipairs(hand) do
+        score = score + card.value
+        if card.name == "Туз" then aces = aces + 1 end
+    end
+    while score > 21 and aces > 0 do
+        score = score - 10
+        aces = aces - 1
+    end
+    return score
+end
+
+-- Функция отрисовки интерфейса
+local function drawTable(playerHand, dealerHand, gameState, message)
+    term.setBackgroundColor(colors.green) -- Зеленое сукно казино
+    term.clear()
+    
+    -- Очки
+    local pScore = calculateScore(playerHand)
+    local dScore = calculateScore(dealerHand)
+    
+    -- Дилер
+    term.setCursorPos(2, 2)
+    term.setTextColor(colors.white)
+    term.write("Карты Дилера: ")
+    for i, card in ipairs(dealerHand) do
+        term.write("[" .. card.name .. "] ")
+    end
+    if gameState == "player_turn" then
+        term.write("[?] (Скрыто)")
+    else
+        term.setCursorPos(2, 3)
+        term.write("Очки Дилера: " .. dScore)
+    end
+    
+    -- Игрок
+    term.setCursorPos(2, 6)
+    term.write("Ваши Карты: ")
+    for _, card in ipairs(playerHand) do
+        term.write("[" .. card.name .. "] ")
+    end
+    term.setCursorPos(2, 7)
+    term.write("Ваши Очки: " .. pScore)
+    
+    -- Сообщение по центру
+    if message then
+        term.setCursorPos(math.floor(w/2) - string.len(message)/2 + 1, 10)
+        term.setTextColor(colors.yellow)
+        term.write(message)
+    end
+    
+    -- Кнопки управления (рисуем только во время хода игрока)
+    if gameState == "player_turn" then
+        -- Кнопка ЕЩЕ
+        term.setBackgroundColor(colors.blue)
+        term.setTextColor(colors.white)
+        term.setCursorPos(5, 12)
+        term.write("[ ВЗЯТЬ ]")
+        
+        -- Кнопка ХВАТИТ
+        term.setBackgroundColor(colors.red)
+        term.setCursorPos(w - 14, 12)
+        term.write("[ ХВАТИТ ]")
+    else
+        -- Кнопка заново
+        term.setBackgroundColor(colors.orange)
+        term.setTextColor(colors.white)
+        term.setCursorPos(math.floor(w/2) - 6, 12)
+        term.write("[ ИГРАТЬ ЕЩЕ ]")
+    end
+end
+
+-- Основная логика игры
+local function playRound()
+    local playerHand = { getRandomCard(), getRandomCard() }
+    -- Дилеру даем одну открытую карту сразу
+    local dealerHand = { getRandomCard() }
+    local gameState = "player_turn"
+    local message = "Ваш ход! Еще или хватит?"
+    
+    -- Блэкджек с раздачи?
+    if calculateScore(playerHand) == 21 then
+        gameState = "game_over"
+        message = "🎉 21 с раздачи! Вы выиграли! 🎉"
+    end
+    
+    while true do
+        drawTable(playerHand, dealerHand, gameState, message)
+        
+        -- Ждем клика по монитору
+        local event, side, x, y = os.pullEvent("monitor_touch")
+        
+        if gameState == "player_turn" then
+            -- Клик по кнопке "ВЗЯТЬ" (Координаты X примерно 5-12, Y=12)
+            if x >= 5 and x <= 12 and y == 12 then
+                table.insert(playerHand, getRandomCard())
+                local score = calculateScore(playerHand)
+                if score > 21 then
+                    gameState = "game_over"
+                    message = "💥 Перебор! Вы проиграли. 💥"
+                elseif score == 21 then
+                    x = w - 14 -- Автоматически триггерим кнопку "Хватит"
+                end
+            end
+            
+            -- Клик по кнопке "ХВАТИТ" (Координаты X примерно с правого края, Y=12)
+            if (x >= w - 14 and x <= w - 5 and y == 12) or (calculateScore(playerHand) == 21 and gameState == "player_turn") then
+                gameState = "dealer_turn"
+                message = "Дилер открывает карты..."
+                drawTable(playerHand, dealerHand, gameState, message)
+                os.sleep(1.5)
+                
+                -- Логика Дилера: берет карты до 17 очков
+                while calculateScore(dealerHand) < 17 do
+                    table.insert(dealerHand, getRandomCard())
+                    drawTable(playerHand, dealerHand, gameState, "Дилер берет карту...")
+                    os.sleep(1.5)
+                end
+                
+                local pScore = calculateScore(playerHand)
+                local dScore = calculateScore(dealerHand)
+                
+                gameState = "game_over"
+                if dScore > 21 then
+                    message = "🎉 У дилера перебор! Вы победили! 🎉"
+                elseif pScore > dScore then
+                    message = "🏆 Вы победили по очкам! 🏆"
+                elseif pScore < dScore then
+                    message = "🙁 Дилер победил. Повезет в другой раз!"
+                else
+                    message = "🤝 Ничья (Пуш)!"
+                end
+            end
+            
+        elseif gameState == "game_over" then
+            -- Клик по кнопке "ИГРАТЬ ЕЩЕ" (По центру, Y=12)
+            local btnStart = math.floor(w/2) - 6
+            if x >= btnStart and x <= btnStart + 13 and y == 12 then
+                break -- Выходим из внутреннего цикла раунда, чтобы запустить новый
+            end
+        end
+    end
+end
+
+-- Бесконечный цикл игры
+while true do
+    playRound()
+end
+
+term.redirect(oldTerm)
