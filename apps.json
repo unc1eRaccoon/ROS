@@ -16,5 +16,11 @@
     "version": "0.9.5",
     "description": "Chat with other users via Rednet wireless network.",
     "url": "https://raw.githubusercontent.com/YourUsername/RaccoonOS-Repo/main/apps/chat.lua"
+  },
+  "game_21": {
+    "title": "Game 21 (O4KO)",
+    "version": "0.0.21",
+    "description": "Play the beautiful game of 21, also known as OCHKO or blackjack.",
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/21"
   }
 }
