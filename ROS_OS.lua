@@ -346,6 +346,10 @@ while true do
     
     if event == "mouse_click" then
         handleMouseClick(p1, p2, p3)
+    elseif event == "monitor_touch" then
+        -- p1 = side (имя монитора), p2 = x, p3 = y
+        -- Передаем 1 вместо кнопки мыши, чтобы handleMouseClick не ломался
+        handleMouseClick(1, p2, p3)
     elseif event == "term_resize" then
         w, h = term.getSize()
         isStartOpen = false
