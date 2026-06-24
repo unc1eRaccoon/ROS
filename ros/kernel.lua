@@ -2,10 +2,8 @@
 --                     RACCOON OS (ROS) v2.0.0 KERNEL
 -- ===================================================================
 
--- Подключаем API графики
-os.unloadAPI("gui")
-if fs.exists("ros/apis/gui.lua") then os.loadAPI("ros/apis/gui.lua") end
-local gui = _G.gui or require("ros/apis/gui")
+-- Чистая и надежная загрузка графического модуля через dofile()
+local gui = dofile("ros/apis/gui.lua")
 
 -- Перенаправление вывода на монитор при наличии
 local monitor = peripheral.find("monitor")
@@ -13,26 +11,25 @@ if monitor then term.redirect(monitor) end
 
 local w, h = term.getSize()
 local isStartOpen = false
-local currentActiveWindow = nil 
 
 local APPS_DIR = "ros/apps"
 if not fs.exists(APPS_DIR) then fs.makeDir(APPS_DIR) end
 
--- Отрисовка Рабочего Стола
+-- Отрисовка Рабокого Стола
 local function drawDesktop()
     term.setBackgroundColor(colors.gray)
     term.clear()
     
-    -- Системная информация в углу
+    -- Системная информация
     term.setTextColor(colors.lightGray)
     term.setCursorPos(2, 2)
-    term.write("RaccoonOS v2.0.0 (Modular)")
+    term.write("RaccoonOS v2.0.0")
     
-    -- Отрисовка Иконок на рабочем столе для быстрого запуска кликом
+    -- Иконки быстрого доступа
     gui.drawIcon(term, 3, 4, "Store", "store")
     gui.drawIcon(term, 10, 4, "Config", "settings")
     
-    -- Отрисовка таскбара (Центрированный Windows 11 стиль)
+    -- Отрисовка нижней панели (Taskbar)
     term.setBackgroundColor(colors.lightGray)
     term.setCursorPos(1, h)
     term.clearLine()
@@ -49,7 +46,7 @@ local function drawDesktop()
     term.write("[O]") 
 end
 
--- Динамическое контекстное Пуск-Меню
+-- Отрисовка меню Пуск
 local function drawStartMenu()
     local files = fs.list(APPS_DIR)
     local menuH = math.max(#files + 3, 5)
@@ -71,7 +68,7 @@ local function drawStartMenu()
     if #files == 0 then
         term.setCursorPos(menuX + 1, menuY + 2)
         term.setTextColor(colors.red)
-        term.write("(No Apps Installed)")
+        term.write("(No Apps)")
     else
         term.setTextColor(colors.black)
         for i, file in ipairs(files) do
@@ -81,17 +78,16 @@ local function drawStartMenu()
     end
 end
 
--- Менеджер запуска приложений в параллельных изолированных окнах
+-- Запуск приложений в изолированном окне
 local function execSystemApp(path, sx, sy, sw, sh)
     local appWin = window.create(term.current(), sx, sy, sw, sh, true)
     
-    -- Родной запуск через встроенный менеджер CC процессов
     local ok, err = pcall(function()
         local sysFn = loadfile(path)
         if sysFn then
-            sysFn(appWin) -- Передаем контекст окна приложению
+            sysFn(appWin)
         else
-            error("Failed to load file script")
+            error("Failed to load script")
         end
     end)
     
@@ -107,11 +103,10 @@ local function execSystemApp(path, sx, sy, sw, sh)
     drawDesktop()
 end
 
--- Обработка интерактивных кликов по экрану
+-- Клики
 local function handleGlobalClick(button, x, y)
     local startX = math.floor((w - 15) / 2) + 1
     
-    -- Если открыто меню Пуск
     if isStartOpen then
         local files = fs.list(APPS_DIR)
         local menuH = math.max(#files + 3, 5)
@@ -133,7 +128,6 @@ local function handleGlobalClick(button, x, y)
         end
     end
     
-    -- Клики по иконкам на Рабочем Столе (Новая фишка без ввода текста!)
     if y >= 4 and y <= 5 then
         if x >= 3 and x <= 7 then
             execSystemApp("ros/system/store.lua", 3, 2, w - 4, h - 3)
@@ -144,7 +138,6 @@ local function handleGlobalClick(button, x, y)
         end
     end
 
-    -- Клики по панели задач (Taskbar)
     if y == h then
         if x >= startX and x <= startX + 2 then
             isStartOpen = not isStartOpen
@@ -157,12 +150,10 @@ local function handleGlobalClick(button, x, y)
     end
 end
 
--- Инициализация и главный цикл событий
 drawDesktop()
 
 while true do
     local event, p1, p2, p3 = os.pullEvent()
-    
     if event == "mouse_click" then
         handleGlobalClick(p1, p2, p3)
     elseif event == "monitor_touch" then
