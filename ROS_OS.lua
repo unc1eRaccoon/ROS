@@ -5,7 +5,7 @@
 -- REPOSITORY CONFIGURATION (Change to your own GitHub details)
 local GITHUB_USER = "unc1eRaccoon"
 local GITHUB_REPO = "ROS/refs/heads"
-local CURRENT_VERSION = "1.0.1"
+local CURRENT_VERSION = "1.0.3"
 
 -- Directories and Files
 local APPS_DIR = "ros/apps"
@@ -174,8 +174,7 @@ local function openAppStore()
     local appList = {}
     local index = 1
     for id, info in pairs(apps) do
-        print(" " .. index .. ". [" .. (info.title or id) .. "]")
-        print("    " .. (info.description or ""))
+        print(" " .. index .. ". [" .. (info.title or id) .. "]  :: " .. (info.description or ""))
         appList[index] = { id = id, url = info.url }
         index = index + 1
     end
