@@ -43,6 +43,25 @@ print("Listening on Rednet: ENABLED")
 print("Press 'Ctrl+T' to exit.\n")
 print("Waiting for messages...")
 
+-- Вспомогательная функция для красивого вывода сообщений
+local function displayMessage(sourceType, sender, distance, message)
+    print("\n-----------------------------------")
+    print("[" .. sourceType .. "] Сообщение")
+    print("Отправитель: " .. sender)
+    if distance then
+        print("Расстояние:  " .. distance .. " блоков")
+    else
+        print("Расстояние:  Неизвестно (через Rednet)")
+    end
+    
+    -- Вывод самого сообщения
+    if type(message) == "table" then
+        print("Сообщение:   " .. textutils.serialize(message))
+    else
+        print("Сообщение:   " .. tostring(message))
+    end
+end
+
 -- Главный цикл ожидания сообщений
 while true do
     -- Перехватываем любые события в системе
@@ -54,14 +73,10 @@ while true do
         
         -- Проверяем, что сообщение пришло именно на наш выбранный канал
         if channel == CHANNEL then
-            print("\n[Modem Message] -------------------")
-            print("Channel: " .. channel)
-            print("Distance: " .. distance .. " blocks")
-            if type(message) == "table" then
-                print("Message: " .. textutils.serialize(message))
-            else
-                print("Message: " .. tostring(message))
-            end
+            -- Используем replyChannel в качестве примерного "имени" отправителя
+            local senderName = replyChannel and ("Канал " .. replyChannel) or "Неизвестный канал"
+            
+            displayMessage("MODEM", senderName, distance, message)
             
             -- Авто-ответ отправителю
             if replyChannel then
@@ -73,15 +88,13 @@ while true do
     elseif event == "rednet_message" then
         local senderID, message, protocol = p1, p2, p3
         
-        print("\n[Rednet Message] ------------------")
-        print("Sender ID: " .. senderID)
+        -- Rednet API скрывает параметр distance внутри своего протокола передачи, 
+        -- но мы выводим его как "Неизвестно" или определяем через ID отправителя.
+        local senderName = "Компьютер #" .. senderID
         if protocol then
-            print("Protocol: " .. tostring(protocol))
+            senderName = senderName .. " (Протокол: " .. tostring(protocol) .. ")"
         end
-        if type(message) == "table" then
-            print("Message: " .. textutils.serialize(message))
-        else
-            print("Message: " .. tostring(message))
-        end
+        
+        displayMessage("REDNET", senderName, nil, message)
     end
 end
