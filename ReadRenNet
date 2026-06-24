@@ -1,0 +1,47 @@
+-- Автоматический поиск модема с любой стороны компьютера
+local modem = peripheral.find("modem")
+
+-- Проверяем, удалось ли найти модем
+if not modem then
+    print("Error: Modem not found! Please attach a modem to the computer.")
+    return
+end
+
+-- Настройка канала для прослушивания сообщения
+local CHANNEL = 1
+
+-- Открываем канал на модеме
+modem.open(CHANNEL)
+term.clear()
+term.setCursorPos(1, 1)
+
+print("=== Wireless Receiver ===")
+print("Modem successfully initialized!")
+print("Listening on channel: " .. CHANNEL)
+print("Press 'Ctrl+T' or 'Ctrl+C' to exit.\n")
+print("Waiting for messages...")
+
+-- Главный цикл ожидания сообщений
+while true do
+    -- Ждем игровое событие modem_message
+    local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
+    
+    -- Проверяем, что сообщение пришло именно на наш открытый канал
+    if channel == CHANNEL then
+        print("\n-----------------------------------")
+        print("Received message on channel: " .. channel)
+        print("Distance to sender: " .. distance .. " blocks")
+        
+        -- Если сообщение — это таблица, преобразуем её в строку для удобного вывода
+        if type(message) == "table" then
+            print("Message (Table): " .. textutils.serialize(message))
+        else
+            print("Message: " .. tostring(message))
+        end
+        
+        -- По желанию: отправляем автоматический ответ обратно на replyChannel
+        if replyChannel then
+            modem.transmit(replyChannel, CHANNEL, "ACK: Message received successfully!")
+        end
+    end
+end
