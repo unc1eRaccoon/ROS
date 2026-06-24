@@ -3,18 +3,18 @@
     "title": "Raccoon Calculator",
     "version": "0.0.1",
     "description": "Just calculator.",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/CALCULATOR"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/calc.lua"
   },
   "game_21": {
     "title": "Game 21 (O4KO)",
     "version": "0.0.21",
     "description": "Blackjack :)",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/21"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/21.lua"
   },
   "Read_rednet": {
     "title": "ReadRednet",
     "version": "0.0.1",
     "description": "We listen to the broadcast and receive messages",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/ReadRenNet"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/ReadRenNet.lua"
   }
 }
