@@ -3,45 +3,85 @@ local modem = peripheral.find("modem")
 
 -- Проверяем, удалось ли найти модем
 if not modem then
-    print("Error: Modem not found! Please attach a modem to the computer.")
+    print("Error: Modem not found! Please attach a modem.")
     return
 end
 
--- Настройка канала для прослушивания сообщения
-local CHANNEL = 1
+-- Получаем системное имя стороны, где стоит модем (нужно для Rednet)
+local modemSide = peripheral.getName(modem)
 
--- Открываем канал на модеме
-modem.open(CHANNEL)
 term.clear()
 term.setCursorPos(1, 1)
+print("=== Receiver Setup ===")
 
-print("=== Wireless Receiver ===")
-print("Modem successfully initialized!")
-print("Listening on channel: " .. CHANNEL)
-print("Press 'Ctrl+T' or 'Ctrl+C' to exit.\n")
+-- Ввод канала вручную с проверкой
+local CHANNEL
+while true do
+    write("Enter modem channel to listen (1-65535): ")
+    local input = read()
+    local num = tonumber(input)
+    if num and num >= 1 and num <= 65535 then
+        CHANNEL = num
+        break
+    else
+        print("Invalid channel! Please enter a number between 1 and 65535.")
+    end
+end
+
+-- Открываем обычный канал на модеме
+modem.open(CHANNEL)
+
+-- Открываем Rednet поверх этого же модема
+rednet.open(modemSide)
+
+term.clear()
+term.setCursorPos(1, 1)
+print("=== Universal Wireless Receiver ===")
+print("Your Computer ID: " .. os.getComputerID())
+print("Listening on Modem Channel: " .. CHANNEL)
+print("Listening on Rednet: ENABLED")
+print("Press 'Ctrl+T' to exit.\n")
 print("Waiting for messages...")
 
 -- Главный цикл ожидания сообщений
 while true do
-    -- Ждем игровое событие modem_message
-    local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
+    -- Перехватываем любые события в системе
+    local event, p1, p2, p3, p4, p5 = os.pullEvent()
     
-    -- Проверяем, что сообщение пришло именно на наш открытый канал
-    if channel == CHANNEL then
-        print("\n-----------------------------------")
-        print("Received message on channel: " .. channel)
-        print("Distance to sender: " .. distance .. " blocks")
+    -- 1. Если пришло сообщение через обычный модем
+    if event == "modem_message" then
+        local side, channel, replyChannel, message, distance = p1, p2, p3, p4, p5
         
-        -- Если сообщение — это таблица, преобразуем её в строку для удобного вывода
-        if type(message) == "table" then
-            print("Message (Table): " .. textutils.serialize(message))
-        else
-            print("Message: " .. tostring(message))
+        -- Проверяем, что сообщение пришло именно на наш выбранный канал
+        if channel == CHANNEL then
+            print("\n[Modem Message] -------------------")
+            print("Channel: " .. channel)
+            print("Distance: " .. distance .. " blocks")
+            if type(message) == "table" then
+                print("Message: " .. textutils.serialize(message))
+            else
+                print("Message: " .. tostring(message))
+            end
+            
+            -- Авто-ответ отправителю
+            if replyChannel then
+                modem.transmit(replyChannel, CHANNEL, "ACK: Modem message received!")
+            end
         end
         
-        -- По желанию: отправляем автоматический ответ обратно на replyChannel
-        if replyChannel then
-            modem.transmit(replyChannel, CHANNEL, "ACK: Message received successfully!")
+    -- 2. Если пришло сообщение через систему Rednet
+    elseif event == "rednet_message" then
+        local senderID, message, protocol = p1, p2, p3
+        
+        print("\n[Rednet Message] ------------------")
+        print("Sender ID: " .. senderID)
+        if protocol then
+            print("Protocol: " .. tostring(protocol))
+        end
+        if type(message) == "table" then
+            print("Message: " .. textutils.serialize(message))
+        else
+            print("Message: " .. tostring(message))
         end
     end
 end
