@@ -2,13 +2,13 @@
   "calculator": {
     "title": "Raccoon Calculator",
     "version": "0.0.1",
-    "description": "Simple and clean calculator for ROS.",
+    "description": "Just calculator.",
     "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/CALCULATOR"
   },
   "game_21": {
     "title": "Game 21 (O4KO)",
     "version": "0.0.21",
-    "description": "Play the beautiful game of 21, also known as OCHKO or blackjack.",
+    "description": "Blackjack :)",
     "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/21"
   }
 }
