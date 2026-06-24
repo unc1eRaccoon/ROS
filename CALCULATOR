@@ -1,6 +1,20 @@
 -- ===================================================================
---                     ROS CALCULATOR APP
+--                     ROS CALCULATOR APP (MONITOR VER.)
 -- ===================================================================
+
+-- Поиск и подключение монитора
+local monitor = peripheral.find("monitor")
+if not monitor then
+    error("Ошибка: Подключите монитор к компьютеру!")
+end
+
+-- Перенаправляем вывод на монитор
+local oldTerm = term.redirect(monitor)
+
+-- Сбрасываем масштаб текста на мониторе (можно настроить от 1 до 5)
+if monitor.setTextScale then
+    monitor.setTextScale(1)
+end
 
 local w, h = term.getSize()
 local expression = ""
@@ -126,8 +140,9 @@ drawUI()
 while true do
     local event, p1, p2, p3 = os.pullEvent()
     
-    if event == "mouse_click" then
-        local mx, my = p2, p3
+    -- Добавлено событие "monitor_touch" для нажатий по монитору
+    if event == "mouse_click" or event == "monitor_touch" then
+        local mx, my = p2, p3 -- Координаты X и Y передаются одинаково в обоих событиях
         if my >= startY and my < h then
             local c = math.floor((mx - 1) / btnW) + 1
             local r = math.floor((my - startY) / btnH) + 1
@@ -153,6 +168,11 @@ while true do
             expression = expression:sub(1, -2)
             drawUI()
         elseif p1 == keys.q then -- Выход из калькулятора по кнопке Q
+            -- Возвращаем стандартный вывод на терминал ПК перед выходом
+            term.redirect(oldTerm)
+            term.clear()
+            term.setCursorPos(1, 1)
+            print("Калькулятор закрыт.")
             break
         end
     end
