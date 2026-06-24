@@ -75,6 +75,7 @@ while true do
                     else
                         gui.clear(win, colors.white)
                         gui.writeCentered(win, h/2, "Failed!", colors.white, colors.red)
+                        gui.writeCentered(win, h/2+4, box.appId, colors.white, colors.red)
                         sleep(1)
                     end
                     return
