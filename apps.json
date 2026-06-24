@@ -21,7 +21,7 @@
     "title": "PC_turtleControl",
     "version": "0.0.1",
     "description": "",
-    "url": "apps/PC_turtleControl"
+    "url": "apps/PC_turtleControl.lua"
   },
   "forTuretle": {
     "title": "TurtleReceiver",
