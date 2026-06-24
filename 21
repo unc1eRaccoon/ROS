@@ -1,6 +1,6 @@
 local monitor = peripheral.find("monitor")
 if not monitor then
-    print("Ошибка: Подключите золотой (Advanced) монитор!")
+    print("Error: Please connect an Advanced (gold) monitor!")
     return
 end
 
@@ -8,135 +8,136 @@ monitor.setTextScale(1)
 local oldTerm = term.redirect(monitor)
 local w, h = term.getSize()
 
--- Названия карт для красоты
-local cardNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Валет", "Дама", "Король", "Туз"}
+-- Card names for display
+local cardNames = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"}
 local cardValues = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11}
 
--- Функция генерации случайной карты
+-- Function to get a random card
 local function getRandomCard()
     local index = math.random(#cardNames)
     return { name = cardNames[index], value = cardValues[index] }
 end
 
--- Подсчет очков с учетом Тузов (если перебор, Туз превращается из 11 в 1)
+-- Score calculation handling Aces (if bust, Ace value drops from 11 to 1)
 local function calculateScore(hand)
     local score = 0
     local aces = 0
     for _, card in ipairs(hand) do
         score = score + card.value
-        if card.name == "Туз" then aces = aces + 1 end
+        if card.name == "Ace" then aces = aces + 1 end
     end
     while score > 21 and aces > 0 do
         score = score - 10
         aces = aces - 1
     end
+    
     return score
 end
 
--- Функция отрисовки интерфейса
+-- UI Drawing Function
 local function drawTable(playerHand, dealerHand, gameState, message)
-    term.setBackgroundColor(colors.green) -- Зеленое сукно казино
+    term.setBackgroundColor(colors.green) -- Casino green felt background
     term.clear()
     
-    -- Очки
+    -- Scores
     local pScore = calculateScore(playerHand)
     local dScore = calculateScore(dealerHand)
     
-    -- Дилер
+    -- Dealer
     term.setCursorPos(2, 2)
     term.setTextColor(colors.white)
-    term.write("Карты Дилера: ")
+    term.write("Dealer's Cards: ")
     for i, card in ipairs(dealerHand) do
         term.write("[" .. card.name .. "] ")
     end
     if gameState == "player_turn" then
-        term.write("[?] (Скрыто)")
+        term.write("[?] (Hidden)")
     else
         term.setCursorPos(2, 3)
-        term.write("Очки Дилера: " .. dScore)
+        term.write("Dealer's Score: " .. dScore)
     end
     
-    -- Игрок
+    -- Player
     term.setCursorPos(2, 6)
-    term.write("Ваши Карты: ")
+    term.write("Your Cards: ")
     for _, card in ipairs(playerHand) do
         term.write("[" .. card.name .. "] ")
     end
     term.setCursorPos(2, 7)
-    term.write("Ваши Очки: " .. pScore)
+    term.write("Your Score: " .. pScore)
     
-    -- Сообщение по центру
+    -- Message in the center
     if message then
         term.setCursorPos(math.floor(w/2) - string.len(message)/2 + 1, 10)
         term.setTextColor(colors.yellow)
         term.write(message)
     end
     
-    -- Кнопки управления (рисуем только во время хода игрока)
+    -- Control buttons (drawn only during the player's turn)
     if gameState == "player_turn" then
-        -- Кнопка ЕЩЕ
+        -- HIT button
         term.setBackgroundColor(colors.blue)
         term.setTextColor(colors.white)
         term.setCursorPos(5, 12)
-        term.write("[ ВЗЯТЬ ]")
+        term.write("[ HIT ]")
         
-        -- Кнопка ХВАТИТ
+        -- STAND button
         term.setBackgroundColor(colors.red)
-        term.setCursorPos(w - 14, 12)
-        term.write("[ ХВАТИТ ]")
+        term.setCursorPos(w - 13, 12)
+        term.write("[ STAND ]")
     else
-        -- Кнопка заново
+        -- Play again button
         term.setBackgroundColor(colors.orange)
         term.setTextColor(colors.white)
-        term.setCursorPos(math.floor(w/2) - 6, 12)
-        term.write("[ ИГРАТЬ ЕЩЕ ]")
+        term.setCursorPos(math.floor(w/2) - 5, 12)
+        term.write("[ PLAY AGAIN ]")
     end
 end
 
--- Основная логика игры
+-- Main Game Logic
 local function playRound()
     local playerHand = { getRandomCard(), getRandomCard() }
-    -- Дилеру даем одну открытую карту сразу
+    -- Dealer gets one face-up card at the start
     local dealerHand = { getRandomCard() }
     local gameState = "player_turn"
-    local message = "Ваш ход! Еще или хватит?"
+    local message = "Your turn! Hit or stand?"
     
-    -- Блэкджек с раздачи?
+    -- Blackjack from the deal?
     if calculateScore(playerHand) == 21 then
         gameState = "game_over"
-        message = "🎉 21 с раздачи! Вы выиграли! 🎉"
+        message = "🎉 Blackjack on the deal! You win! 🎉"
     end
     
     while true do
         drawTable(playerHand, dealerHand, gameState, message)
         
-        -- Ждем клика по монитору
+        -- Wait for a monitor touch event
         local event, side, x, y = os.pullEvent("monitor_touch")
         
         if gameState == "player_turn" then
-            -- Клик по кнопке "ВЗЯТЬ" (Координаты X примерно 5-12, Y=12)
-            if x >= 5 and x <= 12 and y == 12 then
+            -- Click on "HIT" button (X coordinates approx 5-11, Y=12)
+            if x >= 5 and x <= 11 and y == 12 then
                 table.insert(playerHand, getRandomCard())
                 local score = calculateScore(playerHand)
                 if score > 21 then
                     gameState = "game_over"
-                    message = "💥 Перебор! Вы проиграли. 💥"
+                    message = "💥 Bust! You lose. 💥"
                 elseif score == 21 then
-                    x = w - 14 -- Автоматически триггерим кнопку "Хватит"
+                    x = w - 13 -- Automatically trigger the "Stand" button
                 end
             end
             
-            -- Клик по кнопке "ХВАТИТ" (Координаты X примерно с правого края, Y=12)
-            if (x >= w - 14 and x <= w - 5 and y == 12) or (calculateScore(playerHand) == 21 and gameState == "player_turn") then
+            -- Click on "STAND" button (X coordinates approx right edge, Y=12)
+            if (x >= w - 13 and x <= w - 5 and y == 12) or (calculateScore(playerHand) == 21 and gameState == "player_turn") then
                 gameState = "dealer_turn"
-                message = "Дилер открывает карты..."
+                message = "Dealer is revealing cards..."
                 drawTable(playerHand, dealerHand, gameState, message)
                 os.sleep(1.5)
                 
-                -- Логика Дилера: берет карты до 17 очков
+                -- Dealer's logic: hits until reaching 17 or higher
                 while calculateScore(dealerHand) < 17 do
                     table.insert(dealerHand, getRandomCard())
-                    drawTable(playerHand, dealerHand, gameState, "Дилер берет карту...")
+                    drawTable(playerHand, dealerHand, gameState, "Dealer takes a card...")
                     os.sleep(1.5)
                 end
                 
@@ -145,27 +146,27 @@ local function playRound()
                 
                 gameState = "game_over"
                 if dScore > 21 then
-                    message = "🎉 У дилера перебор! Вы победили! 🎉"
+                    message = "🎉 Dealer bust! You win! 🎉"
                 elseif pScore > dScore then
-                    message = "🏆 Вы победили по очкам! 🏆"
+                    message = "🏆 You win by points! 🏆"
                 elseif pScore < dScore then
-                    message = "🙁 Дилер победил. Повезет в другой раз!"
+                    message = "🙁 Dealer wins. Better luck next time!"
                 else
-                    message = "🤝 Ничья (Пуш)!"
+                    message = "🤝 It's a tie (Push)!"
                 end
             end
             
         elseif gameState == "game_over" then
-            -- Клик по кнопке "ИГРАТЬ ЕЩЕ" (По центру, Y=12)
-            local btnStart = math.floor(w/2) - 6
+            -- Click on "PLAY AGAIN" button (Centered, Y=12)
+            local btnStart = math.floor(w/2) - 5
             if x >= btnStart and x <= btnStart + 13 and y == 12 then
-                break -- Выходим из внутреннего цикла раунда, чтобы запустить новый
+                break -- Exit the inner round loop to start a new one
             end
         end
     end
 end
 
--- Бесконечный цикл игры
+-- Infinite Game Loop
 while true do
     playRound()
 end
