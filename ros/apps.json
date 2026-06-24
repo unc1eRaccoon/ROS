@@ -1,0 +1,12 @@
+[
+  {
+    "id": "calculator",
+    "name": "Calculator",
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/ros/apps/calc"
+  },
+  {
+    "id": "Blackjack",
+    "name": "21 - Blackjack",
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/ros/apps/21"
+  }
+]
