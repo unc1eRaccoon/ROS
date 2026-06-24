@@ -3,30 +3,30 @@
     "title": "Raccoon Calculator",
     "version": "0.0.1",
     "description": "Just calculator.",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/calc.lua"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/calc"
   },
   "game_21": {
     "title": "Game 21 (O4KO)",
     "version": "0.0.21",
     "description": "Blackjack :)",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/21.lua"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/21"
   },
   "Read_rednet": {
     "title": "ReadRednet",
     "version": "0.0.1",
     "description": "We listen to the broadcast and receive messages",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/ReadRenNet.lua"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/ReadRenNet"
   },
   "PC_control": {
     "title": "PC_turtleControl",
     "version": "0.0.1",
     "description": "",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/PC_turtleControl.lua"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/PC_turtleControl"
   },
   "forTuretle": {
     "title": "TurtleReceiver",
     "version": "0.0.1",
     "description": "",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/turtle_receiver.lua"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/turtle_receiver"
   }
 }
