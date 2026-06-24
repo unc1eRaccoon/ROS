@@ -5,15 +5,19 @@
 -- REPOSITORY CONFIGURATION (Change to your own GitHub details)
 local GITHUB_USER = "unc1eRaccoon"
 local GITHUB_REPO = "ROS/refs/heads"
-local CURRENT_VERSION = "1.0.3"
+local CURRENT_VERSION = "1.0.4"
 
 -- Directories and Files
 local APPS_DIR = "ros/apps"
 if not fs.exists(APPS_DIR) then fs.makeDir(APPS_DIR) end
 
+-- Ищем любой подключенный монитор
+local monitor = peripheral.find("monitor")
 
-local monitor = peripheral.wrap("top") -- или "monitor_0"
-term.redirect(monitor)
+-- Если монитор найден, перенаправляем вывод на него
+if monitor then
+    term.redirect(monitor)
+end
 
 -- Global OS State
 local w, h = term.getSize()
