@@ -1,4 +1,4 @@
-local BASE_URL = "https://raw.githubusercontent.com/unc1eRaccoon/ROS/heads/main/ros/"
+local BASE_URL = "https://raw.githubusercontent.com/unc1eRaccoon/ROS/heads/main/"
 
 local M = {}
 

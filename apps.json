@@ -3,30 +3,30 @@
     "title": "Raccoon Calculator",
     "version": "0.0.1",
     "description": "Just calculator.",
-    "url": "apps/calc"
+    "url": "ros/apps/calc"
   },
   "game_21": {
     "title": "Game 21 (O4KO)",
     "version": "0.0.21",
     "description": "Blackjack :)",
-    "url": "apps/21"
+    "url": "ros/apps/21"
   },
   "Read_rednet": {
     "title": "ReadRednet",
     "version": "0.0.1",
     "description": "We listen to the broadcast and receive messages",
-    "url": "apps/ReadRedNet"
+    "url": "ros/apps/ReadRedNet"
   },
   "PC_control": {
     "title": "PC_turtleControl",
     "version": "0.0.1",
     "description": "",
-    "url": "ros/apps/PC_turtleControl.lua"
+    "url": "ros/apps/PC_turtleControl"
   },
   "forTuretle": {
     "title": "TurtleReceiver",
     "version": "0.0.1",
     "description": "",
-    "url": "apps/turtle_receiver"
+    "url": "ros/apps/turtle_receiver"
   }
 }
