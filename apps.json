@@ -15,7 +15,7 @@
     "title": "ReadRednet",
     "version": "0.0.1",
     "description": "We listen to the broadcast and receive messages",
-    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/ReadRenNet"
+    "url": "https://raw.githubusercontent.com/unc1eRaccoon/ROS/refs/heads/main/apps/ReadRedNet"
   },
   "PC_control": {
     "title": "PC_turtleControl",
