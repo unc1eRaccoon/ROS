@@ -1,20 +1,20 @@
--- Автоматический поиск модема с любой стороны компьютера
+-- Automatically look up a modem on any side of the computer
 local modem = peripheral.find("modem")
 
--- Проверяем, удалось ли найти модем
+-- Check if a modem was successfully found
 if not modem then
     print("Error: Modem not found! Please attach a modem.")
     return
 end
 
--- Получаем системное имя стороны, где стоит модем (нужно для Rednet)
+-- Get the system name of the side where the modem is attached (required for Rednet)
 local modemSide = peripheral.getName(modem)
 
 term.clear()
 term.setCursorPos(1, 1)
 print("=== Receiver Setup ===")
 
--- Ввод канала вручную с проверкой
+-- Manual channel input with validation loop
 local CHANNEL
 while true do
     write("Enter modem channel to listen (1-65535): ")
@@ -28,10 +28,10 @@ while true do
     end
 end
 
--- Открываем обычный канал на модеме
+-- Open the specified channel on the raw modem
 modem.open(CHANNEL)
 
--- Открываем Rednet поверх этого же модема
+-- Open the Rednet API over the exact same modem side
 rednet.open(modemSide)
 
 term.clear()
@@ -43,56 +43,55 @@ print("Listening on Rednet: ENABLED")
 print("Press 'Ctrl+T' to exit.\n")
 print("Waiting for messages...")
 
--- Вспомогательная функция для красивого вывода сообщений
+-- Helper function for clean message formatting and output
 local function displayMessage(sourceType, sender, distance, message)
     print("\n-----------------------------------")
-    print("[" .. sourceType .. "] Сообщение")
-    print("Отправитель: " .. sender)
+    print("[" .. sourceType .. "] Message incoming")
+    print("Sender:   " .. sender)
     if distance then
-        print("Расстояние:  " .. distance .. " блоков")
+        print("Distance: " .. distance .. " blocks")
     else
-        print("Расстояние:  Неизвестно (через Rednet)")
+        print("Distance: Unknown (via Rednet)")
     end
     
-    -- Вывод самого сообщения
+    -- Format and print the message body based on its type
     if type(message) == "table" then
-        print("Сообщение:   " .. textutils.serialize(message))
+        print("Message:  " .. textutils.serialize(message))
     else
-        print("Сообщение:   " .. tostring(message))
+        print("Message:  " .. tostring(message))
     end
 end
 
--- Главный цикл ожидания сообщений
+-- Main event polling loop
 while true do
-    -- Перехватываем любые события в системе
+    -- Intercept any events triggered within the system
     local event, p1, p2, p3, p4, p5 = os.pullEvent()
     
-    -- 1. Если пришло сообщение через обычный модем
+    -- 1. Handle incoming raw modem transmission
     if event == "modem_message" then
         local side, channel, replyChannel, message, distance = p1, p2, p3, p4, p5
         
-        -- Проверяем, что сообщение пришло именно на наш выбранный канал
+        -- Double check that the packet matches our configured channel
         if channel == CHANNEL then
-            -- Используем replyChannel в качестве примерного "имени" отправителя
-            local senderName = replyChannel and ("Канал " .. replyChannel) or "Неизвестный канал"
+            -- Fallback to reply channel description as sender name identifier
+            local senderName = replyChannel and ("Channel " .. replyChannel) or "Unknown Channel"
             
             displayMessage("MODEM", senderName, distance, message)
             
-            -- Авто-ответ отправителю
+            -- Automatically respond back to sender if they provided a reply channel
             if replyChannel then
                 modem.transmit(replyChannel, CHANNEL, "ACK: Modem message received!")
             end
         end
         
-    -- 2. Если пришло сообщение через систему Rednet
+    -- 2. Handle incoming high-level Rednet system transmission
     elseif event == "rednet_message" then
         local senderID, message, protocol = p1, p2, p3
         
-        -- Rednet API скрывает параметр distance внутри своего протокола передачи, 
-        -- но мы выводим его как "Неизвестно" или определяем через ID отправителя.
-        local senderName = "Компьютер #" .. senderID
+        -- Formulate sender details based on computer ID and potential protocol
+        local senderName = "Computer #" .. senderID
         if protocol then
-            senderName = senderName .. " (Протокол: " .. tostring(protocol) .. ")"
+            senderName = senderName .. " (Protocol: " .. tostring(protocol) .. ")"
         end
         
         displayMessage("REDNET", senderName, nil, message)
