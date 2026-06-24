@@ -23,7 +23,7 @@ local function drawDesktop()
     -- Системная информация
     term.setTextColor(colors.lightGray)
     term.setCursorPos(2, 2)
-    term.write("RaccoonOS v2.0.0")
+    term.write("RaccoonOS v2.0.1")
     
     -- Иконки быстрого доступа
     gui.drawIcon(term, 3, 4, "Store", "store")
